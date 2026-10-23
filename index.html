@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sky Trace - Learn Letters, Numbers & Shapes with Hand Gestures</title>
+  <meta name="description" content="A magical desktop AR learning experience where kids learn letters, numbers, and shapes using air-tracing and hand gestures with MediaPipe AI.">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Google MediaPipe Solutions (Vision & Tracking) -->
+  <script src="https://unpkg.com/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="sky-app" id="skyApp">
+
+    <!-- ====================================================================
+         SCREEN 1: SPLASH / WELCOME
+         ==================================================================== -->
+    <section class="screen screen-splash" id="screen-splash">
+      <div class="splash-cloud cloud-1"></div>
+      <div class="splash-cloud cloud-2"></div>
+      <div class="splash-star star-1">⭐</div>
+      <div class="splash-star star-2">✨</div>
+      <div class="splash-star star-3">⭐</div>
+
+      <div class="splash-content">
+        <!-- Prominent Sky Trace Logo -->
+        <div class="logo-wrapper">
+          <div class="logo-title">
+            <span class="logo-part-sky">sky</span>
+            <span class="logo-part-trace">trace</span>
+            <span class="logo-pencil">✏️</span>
+          </div>
+          <svg class="logo-trail-svg" viewBox="0 0 280 28" fill="none">
+            <path d="M 10 18 Q 70 2 130 18 T 250 14" stroke="#4CC9F0" stroke-width="4" stroke-dasharray="8 8" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <p class="splash-tagline">Learn letters, numbers and more with fun hand gestures!</p>
+
+        <button class="btn-cta btn-gold" id="btnStartLearning">
+          <span>Start learning</span>
+          <span class="btn-arrow">➔</span>
+        </button>
+      </div>
+
+      <!-- Mascot Row along the bottom meadow -->
+      <div class="splash-mascot-footer">
+        <img src="assets/splash_mascots.jpg" alt="Sky Trace Mascots" class="splash-mascot-img">
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 2: ONBOARDING / INTRODUCTION
+         ==================================================================== -->
+    <section class="screen screen-onboarding hidden" id="screen-onboarding">
+      <!-- 3-step indicator without shared navbar -->
+      <div class="step-indicator">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+
+      <div class="onboarding-split">
+        <!-- Left: Clear benefits & Next button -->
+        <div class="onboarding-left">
+          <h2 class="onboarding-title">Trace and Learn</h2>
+          <p class="onboarding-subtitle">Follow the guide and write letters in the air.</p>
+
+          <div class="benefit-list">
+            <div class="benefit-item">
+              <div class="benefit-icon bg-coral">🖐️</div>
+              <div class="benefit-text">Use your hand to trace</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon bg-gold">⭐</div>
+              <div class="benefit-text">Get instant feedback</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon bg-blue">📊</div>
+              <div class="benefit-text">Earn stars and unlock new worlds</div>
+            </div>
+          </div>
+
+          <button class="btn-cta btn-coral" id="btnOnboardingNext">
+            <span>Next</span>
+            <span class="btn-arrow">➔</span>
+          </button>
+        </div>
+
+        <!-- Right: Boy tracing letter A in the sky -->
+        <div class="onboarding-right">
+          <div class="onboarding-card">
+            <img src="assets/onboarding_boy.jpg" alt="Child air-tracing letter A" class="onboarding-img">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 3: WORLD MAP
+         ==================================================================== -->
+    <section class="screen screen-world-map hidden" id="screen-world-map">
+      <!-- Contextual Back Button -->
+      <button class="btn-back-circle" id="btnBackFromMap" aria-label="Back to Onboarding">←</button>
+
+      <!-- Learning Journey Summary Card -->
+      <div class="learning-journey-card">
+        <h3 class="journey-title">Your learning journey</h3>
+        
+        <div class="journey-level-row">
+          <span class="journey-level-label" id="mapLevelTitle">Level 1</span>
+          <div class="journey-track">
+            <div class="journey-fill" id="mapLevelProgressBar" style="width: 25%;"></div>
+          </div>
+          <span class="journey-fraction" id="mapProgressFraction">2/12</span>
+        </div>
+
+        <ul class="journey-perks">
+          <li><span class="perk-icon">🚩</span> Complete activities</li>
+          <li><span class="perk-icon">⭐</span> Earn stars (<strong id="mapTotalStars">0</strong> stars)</li>
+          <li><span class="perk-icon">🔥</span> Practice Streak: <strong id="mapPracticeStreak">0</strong></li>
+        </ul>
+      </div>
+
+      <!-- Island Map Surface with Positioned Destinations -->
+      <div class="map-viewport">
+        <img src="assets/world_map.jpg" alt="Sky Trace World Map" class="map-bg-img">
+
+        <!-- Island Destination Hotspots: ALL UNLOCKED & FULLY FUNCTIONAL -->
+        <button class="map-island-btn island-letters" id="btnMapLetters" title="Letters Islands">
+          <span>Letters</span>
+          <span class="island-arrow">➔</span>
+        </button>
+
+        <button class="map-island-btn island-numbers" id="btnMapNumbers" title="Numbers Island">
+          <span>Numbers</span>
+          <span class="island-arrow">➔</span>
+        </button>
+
+        <button class="map-island-btn island-shapes" id="btnMapShapes" title="Shapes Island">
+          <span>Shapes</span>
+          <span class="island-arrow">➔</span>
+        </button>
+
+        <!-- PRACTICE ISLAND: UNLOCKED IMMEDIATELY -->
+        <button class="map-island-btn island-practice unlocked" id="btnMapPractice" title="Practice Island - Play Challenges!">
+          <span class="island-badge-sparkle">✨</span>
+          <span>Practice</span>
+          <span class="island-arrow">➔</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 4: WORLDS / CATEGORY SELECTION ("Explore the Islands")
+         ==================================================================== -->
+    <section class="screen screen-categories hidden" id="screen-categories">
+      <!-- Contextual Back Button -->
+      <button class="btn-back-circle" id="btnBackFromCategories" aria-label="Back to Map">←</button>
+
+      <div class="categories-header">
+        <div class="categories-titles">
+          <h2 class="categories-heading">Explore the Islands</h2>
+          <p class="categories-subtitle">Choose a world to start learning!</p>
+        </div>
+        <div class="smiling-sun">
+          <div class="sun-face">☀️</div>
+        </div>
+      </div>
+
+      <!-- Four Spacious Island Cards -->
+      <div class="categories-grid">
+        <!-- Card 1: Small Letters -->
+        <div class="category-card" data-chapter="chapter_small" id="catCardSmall">
+          <div class="cat-img-box cat-img-small">
+            <span class="cat-badge-float">🔡</span>
+          </div>
+          <div class="cat-info">
+            <h3 class="cat-title">Small Letters</h3>
+            <span class="cat-sub">a b c</span>
+          </div>
+          <button class="cat-arrow-btn" aria-label="Open Small Letters">➔</button>
+        </div>
+
+        <!-- Card 2: Capital Letters -->
+        <div class="category-card" data-chapter="chapter_capital" id="catCardCapital">
+          <div class="cat-img-box cat-img-capital">
+            <span class="cat-badge-float">🔤</span>
+          </div>
+          <div class="cat-info">
+            <h3 class="cat-title">Capital Letters</h3>
+            <span class="cat-sub">A B C</span>
+          </div>
+          <button class="cat-arrow-btn" aria-label="Open Capital Letters">➔</button>
+        </div>
+
+        <!-- Card 3: Numbers -->
+        <div class="category-card" data-chapter="chapter_numbers" id="catCardNumbers">
+          <div class="cat-img-box cat-img-numbers">
+            <span class="cat-badge-float">🔢</span>
+          </div>
+          <div class="cat-info">
+            <h3 class="cat-title">Numbers</h3>
+            <span class="cat-sub">0 – 9</span>
+          </div>
+          <button class="cat-arrow-btn" aria-label="Open Numbers">➔</button>
+        </div>
+
+        <!-- Card 4: Shapes -->
+        <div class="category-card" data-chapter="chapter_shapes" id="catCardShapes">
+          <div class="cat-img-box cat-img-shapes">
+            <span class="cat-badge-float">🔶</span>
+          </div>
+          <div class="cat-info">
+            <h3 class="cat-title">Shapes</h3>
+            <span class="cat-sub">△ ○ □ ⬭</span>
+          </div>
+          <button class="cat-arrow-btn" aria-label="Open Shapes">➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 5: DEDICATED CATEGORY SELECTION GRID SCREEN
+         (Shows all characters/shapes in a playful grid of large selectable cards)
+         ==================================================================== -->
+    <section class="screen screen-category-items hidden" id="screen-category-items">
+      <!-- Contextual Back Button -->
+      <button class="btn-back-circle" id="btnBackFromCategoryItems" aria-label="Back">←</button>
+
+      <div class="category-items-header">
+        <div class="category-items-title-row">
+          <span class="category-items-badge" id="categoryItemsBadge">🔡</span>
+          <div>
+            <h2 class="category-items-heading" id="categoryItemsHeading">Small Letters (a–z)</h2>
+            <p class="category-items-tagline" id="categoryItemsTagline">Choose any letter to start guided air-tracing!</p>
+          </div>
+        </div>
+
+        <div class="category-items-stats-pill" id="categoryItemsStatsPill">
+          ⭐ 0/78 Stars &bull; 0/26 Completed
+        </div>
+      </div>
+
+      <!-- Complete Grid of Large Selectable Cards -->
+      <div class="items-grid-container" id="itemsGridContainer">
+        <!-- Rendered dynamically for Small Letters, Capital Letters, Numbers, Shapes -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 6: DEDICATED GUIDED AIR-TRACING SCREEN
+         (Preserves MediaPipe hand-tracking, real-time feedback, checkpoints, trail)
+         ==================================================================== -->
+    <section class="screen screen-tracing hidden" id="screen-tracing">
+      <!-- Top Contextual Tracing Bar -->
+      <div class="tracing-nav-bar">
+        <button class="btn-back-circle-sm" id="btnBackFromTracing" title="Return to Selection">←</button>
+
+        <div class="tracing-header-info">
+          <span class="tracing-header-char" id="tracingHeaderChar">A</span>
+          <span class="tracing-header-name" id="tracingHeaderName">Letter A (Apple 🍎)</span>
+          <button class="btn-sound-mini" id="btnTracingSound" title="Hear sound">🔊</button>
+        </div>
+
+        <!-- Real-Time Feedback Pill (Green = Correct, Red = Incorrect) -->
+        <div class="feedback-pill feedback-idle" id="realtimeFeedbackPill">
+          <span class="feedback-icon" id="feedbackIcon">🎯</span>
+          <span class="feedback-text" id="feedbackText">Touch start dot 1 to begin!</span>
+        </div>
+
+        <div class="tracing-nav-actions">
+          <button class="btn-tool-pill" id="btnTracingPrev" title="Previous Item">❮ Prev</button>
+          <button class="btn-tool-pill" id="btnTracingNext" title="Next Item">Next ❯</button>
+          <button class="btn-tool-pill btn-demo" id="btnTracingDemo">🪄 Show Me</button>
+          <button class="btn-tool-pill" id="btnTracingRetry">🔄 Retry</button>
+
+          <!-- Camera Status & Switcher -->
+          <button class="btn-tool-pill btn-camera" id="btnToggleCamera" title="Toggle Camera">📷 Camera</button>
+          <div class="mode-mini-pill">
+            <button class="mode-opt active" data-mode="hand" id="miniModeHand" title="Index Finger Tracking">🖐️</button>
+            <button class="mode-opt" data-mode="mouse" id="miniModeMouse" title="Mouse/Touch drawing">🖱️</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Status Banner (if error or webcam access instruction needed) -->
+      <div class="camera-status-strip" id="cameraStatusStrip">
+        <span id="cameraStatusText">Webcam Ready: Use your index finger in the air to trace!</span>
+      </div>
+
+      <!-- Tracing Main Stage Viewport -->
+      <div class="tracing-stage-viewport" id="tracingStageViewport">
+        <!-- Hidden video element for MediaPipe frame ingestion -->
+        <video id="webcamVideo" playsinline autoplay muted></video>
+
+        <!-- Fullscreen high-performance canvas -->
+        <canvas id="arCanvas"></canvas>
+
+        <!-- Bottom Floating Stroke Progress Pill -->
+        <div class="tracing-bottom-progress">
+          <span class="progress-pill-label" id="strokeProgressText">Stroke 1 of 3</span>
+          <div class="progress-pill-track">
+            <div class="progress-pill-fill" id="strokeProgressBar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SCREEN 7: DEDICATED PRACTICE ISLAND SCREEN (Immediately Unlocked Game)
+         ==================================================================== -->
+    <section class="screen screen-practice hidden" id="screen-practice">
+      <!-- Contextual Back Button -->
+      <button class="btn-back-circle" id="btnBackFromPractice" aria-label="Back to Map">←</button>
+
+      <div class="practice-container">
+        <div class="practice-header">
+          <div class="practice-badge-big">🏝️</div>
+          <div>
+            <h2 class="practice-heading">Practice Island</h2>
+            <p class="practice-subtitle">Random Tracing Challenges to sharpen your skills!</p>
+          </div>
+        </div>
+
+        <!-- Practice Stats Strip -->
+        <div class="practice-stats-strip">
+          <div class="practice-stat-box">
+            <span class="stat-icon">🔥</span>
+            <div class="stat-details">
+              <span class="stat-number" id="practiceStreakVal">0</span>
+              <span class="stat-title">Current Streak</span>
+            </div>
+          </div>
+
+          <div class="practice-stat-box">
+            <span class="stat-icon">⭐</span>
+            <div class="stat-details">
+              <span class="stat-number" id="practiceTotalVal">0</span>
+              <span class="stat-title">Completed Challenges</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice Challenge Card -->
+        <div class="practice-challenge-card">
+          <div class="challenge-category-tag" id="practiceChallengeCategory">Small Letters</div>
+
+          <div class="challenge-item-visual">
+            <div class="challenge-char-display" id="practiceChallengeChar">m</div>
+            <div class="challenge-item-info">
+              <h3 class="challenge-item-name" id="practiceChallengeName">Letter m (Moon 🌙)</h3>
+              <p class="challenge-item-desc" id="practiceChallengeDesc">Trace the short stick and two smooth arches!</p>
+            </div>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="practice-filter-row">
+            <span class="filter-label">Mix Filter:</span>
+            <button class="filter-pill active" data-filter="all">🌟 All Items</button>
+            <button class="filter-pill" data-filter="letters">🔤 Letters Only</button>
+            <button class="filter-pill" data-filter="numbers">🔢 Numbers Only</button>
+            <button class="filter-pill" data-filter="shapes">🔶 Shapes Only</button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="practice-actions-row">
+            <button class="btn-cta btn-gold" id="btnStartPracticeChallenge">
+              <span>Start Tracing Challenge</span>
+              <span class="btn-arrow">➔</span>
+            </button>
+            <button class="btn-cta btn-secondary" id="btnRerollChallenge">
+              <span>🎲 Try Another Challenge</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         LEVEL COMPLETE ANIMATION OVERLAY
+         (Bouncing character emoji + "X for Word!" — plays before toast)
+         ==================================================================== -->
+    <div class="level-anim-overlay hidden" id="levelAnimOverlay">
+      <div class="level-anim-box" id="levelAnimBox">
+        <!-- Character display -->
+        <div class="level-anim-char" id="levelAnimChar">A</div>
+        <!-- Bouncing emoji illustration -->
+        <div class="level-anim-emoji" id="levelAnimEmoji">🍎</div>
+        <!-- "A for Apple!" label -->
+        <div class="level-anim-label" id="levelAnimLabel">A for Apple!</div>
+        <!-- Floating sparkle bursts (injected by JS) -->
+        <div class="level-anim-sparks" id="levelAnimSparks"></div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         CELEBRATION SUCCESS MODAL (Upon completing any trace)
+         ==================================================================== -->
+    <div class="celebration-toast hidden" id="celebrationToast">
+      <div class="celebration-toast-box">
+        <span class="toast-stars" id="toastStars">⭐⭐⭐</span>
+        <h3 class="toast-title" id="toastTitle">Awesome Tracing!</h3>
+        <p class="toast-desc" id="toastDesc">You earned 3 Stars!</p>
+        <div class="toast-action-buttons">
+          <button class="btn-cta btn-gold" id="btnToastNext">Next Item ➔</button>
+          <button class="btn-cta btn-secondary" id="btnToastRetry">Trace Again 🔄</button>
+          <button class="btn-cta btn-secondary" id="btnToastGrid">All Items 🗺️</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Application Logic -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
+
